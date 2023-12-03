@@ -2,7 +2,11 @@
     <div v-if="loggedIn">
         <button @click="logout">logout</button>
         <button @click="getData">Get Data</button>
-        <p v-if="responseData">Data: {{ responseData }}</p>
+        <p v-if="responseData" v-for="applicant in responseData" key="№">
+        <ol v-for="(field, key) in applicant.data">
+            {{ key }} : {{ field }}
+        </ol>
+        </p>
     </div>
     <div v-else>
         <h2 class="orange_text">Добро пожаловать на сайт магистратуры ФИТ НГУ!</h2>
@@ -34,9 +38,9 @@ function logout() {
 const responseData = ref(null)
 
 function getData() {
-    axios.get('https://jsonplaceholder.typicode.com/posts/1')
+    axios.get('http://89.104.67.184:8080/applicants')
         .then(response => {
-            responseData.value = response.data;
+            responseData.value = response.data.applicantList;
         })
         .catch(error => {
             console.error(error);
