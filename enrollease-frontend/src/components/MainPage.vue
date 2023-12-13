@@ -1,13 +1,18 @@
 <template>
     <div v-if="loggedIn">
         <button @click="logout">logout</button>
-        <div>
+        <div v-if="filteredData">
+            <label for="sortByScore">Фильтр по убыванию суммы баллов:</label>
+            <select id="sortByScore" v-model="selectedFilter" @change="filterRows">
+                <option value="">Без фильтра</option>
+                <option value="descending">По убыванию</option>
+            </select>
             <table class="custom-table">
                 <thead>
                     <th v-for="column in listColumns" :key="column">{{ column }}</th>
                 </thead>
-                <tbody v-if="responseData">
-                    <tr v-for="applicant in responseData" key="№">
+                <tbody>
+                    <tr v-for="applicant in filteredData" key="№">
                         <td class="center-align">{{ applicant.data.ФИО }}</td>
                         <td>{{ applicant.data.Оригинал }}</td>
                         <td>{{ applicant.data.Пол }}</td>
@@ -31,14 +36,26 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { GoogleLogin, decodeCredential, googleLogout } from 'vue3-google-login';
 import logo_fit from '../assets/FIT Logo.svg'
 import axios from 'axios'
 
 const loggedIn = ref(false)
 const user = ref(null)
+const responseData = ref(null)
+const selectedFilter = ref('')
 const listColumns = ref(["ФИО", "Оригинал", "Пол", "Состояние", "Дата рождения", "Житель города", "Направление\\специальность", "Сумма баллов по ИД", "Сумма баллов"])
+
+const filteredData = computed(() => {
+    if (responseData && selectedFilter.value === 'descending') {
+        return responseData.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
+    } else {
+        return responseData.value
+    }
+})
+
+
 
 function callback(response) {
     loggedIn.value = true
@@ -50,8 +67,6 @@ function logout() {
     googleLogout()
     loggedIn.value = false
 }
-
-const responseData = ref(null)
 
 onMounted(() => {
     axios.get('http://89.104.67.184:8080/applicants')
