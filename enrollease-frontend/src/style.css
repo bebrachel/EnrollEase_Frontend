@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
   margin: 0;
 }
 
@@ -6,4 +7,33 @@ header {
   background-color: #FF8933;
   color: #010101;
   padding: 20px;
+  margin-bottom: 50px;
+}
+
+label {
+  margin-right: 10px;
+}
+
+.custom-table {
+  border-collapse: collapse;
+  width: calc(100% - 40px);
+  /* Ширина 100%, отнимаем 40px за счет отступов по 20px с каждой стороны */
+  margin: 20px;
+  /* Отступы от краев экрана */
+}
+
+.custom-table th,
+.custom-table td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+}
+
+.custom-table th {
+  background-color: #f2f2f2;
+}
+
+.custom-table th:not(:last-child),
+.custom-table td:not(:last-child) {
+  margin-right: 10px;
 }
