@@ -1,0 +1,46 @@
+@charset "utf-8";
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+
+/*header and navigation*/
+header {
+    background-color: #FF8933;
+    display: flex;
+    align-items: center;
+}
+
+h1#logo a {
+    font-style: italic;
+}
+
+nav {
+    margin: 5pt;
+    margin-bottom: 0;
+}
+
+nav ul li {
+    display: inline;
+    list-style-type: none;    
+    padding: 20pt;
+}
+
+nav ul li a:hover, a:link, a:visited {
+    text-decoration: none;
+    color: #ffffff;
+}
+
+nav ul li.selected {
+    text-decoration: underline;
+}
+
+div#log_out {
+    color: #ffffff;
+    padding: 10pt;
+    margin: 5pt;
+    margin-bottom: 0;
+}
