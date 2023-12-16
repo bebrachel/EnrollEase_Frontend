@@ -12,13 +12,17 @@
                 <th v-for="column in listColumns" :key="column">{{ column }}</th>
             </thead>
             <tbody>
-                <tr v-for="applicant in filteredData" key="№">
-                    <td class="center-align">{{ applicant.data.ФИО }}</td>
+                <tr v-for="(applicant, k) in filteredData" key="№">
+                    <td>
+                        <router-link :to="{ name: 'ApplicantDetails', params: { number: applicant.data['№'] - 1 } }" class="link">
+                            {{ applicant.data.ФИО }}
+                        </router-link>
+                    </td>
                     <td>{{ applicant.data.Оригинал }}</td>
                     <td>{{ applicant.data.Пол }}</td>
                     <td>{{ applicant.data.Состояние }}</td>
                     <td>{{ applicant.data['Дата рождения'].split(' ')[0] }}</td>
-                    <td class="center-align">{{ applicant.data['Житель города'] }}</td>
+                    <td>{{ applicant.data['Житель города'] }}</td>
                     <td>{{ applicant.data['Направление\\специальность'] }}</td>
                     <td>{{ applicant.data['Сумма баллов по ИД (все)'] }}</td>
                     <td>{{ applicant.data['Сумма баллов'] }}</td>
@@ -36,15 +40,15 @@ import axios from 'axios'
 
 const serverUrl = inject("serverUrl")
 const token = inject("token")
-const responseData = ref(null)
+const applicantList = inject("applicantList")
 const selectedFilter = ref('')
 const listColumns = ref(["ФИО", "Оригинал", "Пол", "Состояние", "Дата рождения", "Житель города", "Направление\\специальность", "Сумма баллов по ИД", "Сумма баллов"])
 
 const filteredData = computed(() => {
-    if (responseData && selectedFilter.value === 'descending') {
-        return responseData.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
+    if (applicantList && selectedFilter.value === 'descending') {
+        return applicantList.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
     } else {
-        return responseData.value
+        return applicantList.value
     }
 })
 
@@ -54,9 +58,17 @@ onMounted(() => {
             'Authorization': `Bearer ${token.value}`
         }
     }).then(response => {
-        responseData.value = response.data.applicantList;
+        applicantList.value = response.data.applicantList;
     }).catch(error => {
         console.error(error);
     })
 })
 </script>
+
+
+
+<style scoped>
+.link {
+    text-decoration: none;
+}
+</style>

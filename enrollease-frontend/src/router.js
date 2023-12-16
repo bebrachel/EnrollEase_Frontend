@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Applicants from './components/Applicants.vue'
-import Settings from './components/Settings.vue'
 import MainPage from './components/MainPage.vue'
+import Applicants from './components/Applicants.vue'
+import ApplicantDetails from './components/ApplicantDetails.vue'
+import Settings from './components/Settings.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -14,9 +15,25 @@ const router = createRouter({
         path: '/applicants',
         component: Applicants
     }, {
+        name: 'ApplicantDetails',
+        path: '/applicants/:number',
+        component: ApplicantDetails,
+        props: true,
+        beforeEnter: (to, _from, next) => {
+            const number = Number(to.params.number);
+            if (!isNaN(number)) {
+                next();
+            } else {
+                next('/applicants');
+            }
+        }
+    }, {
         name: 'Settings',
         path: '/settings',
         component: Settings
+    }, {
+        path: '/:pathMatch(.*)*',
+        redirect: '/',
     }]
 })
 

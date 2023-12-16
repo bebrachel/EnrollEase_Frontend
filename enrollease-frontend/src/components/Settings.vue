@@ -80,7 +80,3 @@ function getData() {
     })
 }
 </script>
-
-
-<style scoped>
-</style>

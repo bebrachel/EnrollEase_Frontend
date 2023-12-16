@@ -7,6 +7,7 @@ import router from './router'
 const CLIENT_ID = ""
 const serverUrl = "http://89.104.67.184:8080/"
 const token = ref(null)
+const applicantList = ref(null)
 
 createApp(App)
     .use(router)
@@ -15,4 +16,5 @@ createApp(App)
     })
     .provide("serverUrl", serverUrl)
     .provide("token", token)
+    .provide("applicantList", applicantList)
     .mount('#app')
