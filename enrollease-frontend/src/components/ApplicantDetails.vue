@@ -15,5 +15,4 @@
 import { inject } from 'vue'
 
 const applicantList = inject("applicantList")
-
 </script>

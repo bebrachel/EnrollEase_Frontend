@@ -25,9 +25,10 @@
 
 
 <script setup>
-import { inject, ref } from 'vue'
+import { inject, onMounted, ref } from 'vue'
 import { GoogleLogin, googleLogout } from 'vue3-google-login';
 import logo_fit from './assets/FIT Logo.svg'
+import axios from 'axios'
 
 const token = inject("token")
 const loggedIn = ref(false)

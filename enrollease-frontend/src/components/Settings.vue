@@ -32,7 +32,7 @@
 
 
 <script setup>
-import { inject, onMounted, ref } from 'vue'
+import { ref, inject, onMounted } from 'vue'
 import axios from 'axios'
 
 const add = ref(false)
@@ -50,7 +50,6 @@ const roleNames = ref({
 })
 
 function addNewColleague() {
-    console.log(newColleagueData)
     axios.put(serverUrl + 'admin/colleagues', newColleagueData.value, {
         headers: {
             'Authorization': `Bearer ${token.value}`
