@@ -15,12 +15,9 @@
                 <th v-for="column in listColumns" :key="column">{{ column }}</th>
             </thead>
             <tbody>
-                <tr v-for="applicant in filteredData" key="№">
+                <tr v-for="applicant in filteredData" key="№" @click="goToTheApplicant(applicant.data['№'])">
                     <td>
-                        <router-link :to="{ name: 'ApplicantDetails', params: { number: applicant.data['№'] - 1 } }"
-                            class="link">
                             {{ applicant.data.ФИО }}
-                        </router-link>
                     </td>
                     <td v-for="col in listColumns.slice(1)" :key="col">
                         <div v-if="col != 'ФИО'">
@@ -37,7 +34,10 @@
 
 <script setup>
 import { inject, ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
+
+const router = useRouter()
 
 const serverUrl = inject("serverUrl")
 const token = inject("token")
@@ -85,6 +85,10 @@ function editData(data, col) {
     } else {
         return data[col]
     }
+}
+
+function goToTheApplicant(n) {
+    router.push({ name: 'ApplicantDetails', params: { number: `${n - 1}` } })
 }
 
 onMounted(() => {
