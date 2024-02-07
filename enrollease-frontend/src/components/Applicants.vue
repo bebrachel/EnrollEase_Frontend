@@ -1,11 +1,14 @@
 <template>
     <div v-if="filteredData">
-        <div class="element">
-            <label for="sortByScore">Фильтр по убыванию суммы баллов:</label>
-            <select id="sortByScore" v-model="selectedFilter">
-                <option value="">Без фильтра</option>
-                <option value="descending">По убыванию</option>
-            </select>
+        <div id="search">
+            <div>
+                <label for="sortByScore">Фильтр по убыванию суммы баллов:</label>
+                <select id="sortByScore" v-model="selectedFilter">
+                    <option value="">Без фильтра</option>
+                    <option value="descending">По убыванию</option>
+                </select>
+            </div>
+            <input id="searchString" type="text" v-model="searchString" placeholder="Поиск по ФИО">
         </div>
         <table class="custom-table">
             <thead>
@@ -40,13 +43,26 @@ const serverUrl = inject("serverUrl")
 const token = inject("token")
 const applicantList = inject("applicantList")
 const selectedFilter = ref('')
+const searchString = ref('')
 const listColumns = ref(["ФИО", "Оригинал", "Пол", "Состояние", "Возраст", "Житель города", "Направление\\специальность", "Сумма баллов по ИД", "Сумма баллов"])
 
 const filteredData = computed(() => {
+    const resultList = ref()
     if (applicantList && selectedFilter.value === 'descending') {
-        return applicantList.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
+        resultList.value = applicantList.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
     } else {
-        return applicantList.value
+        resultList.value = applicantList.value
+    }
+    if (searchString.value !== "") {
+        return resultList.value.filter(applicant => {
+            const search = searchString.value.toLowerCase()
+            const lowerFIO = applicant.data.ФИО.toLowerCase()
+            const fio = lowerFIO.split(' ');
+            return fio.some(substring => substring.startsWith(search)) ||
+                   lowerFIO.startsWith(search);
+        });
+    } else {
+        return resultList.value
     }
 })
 
@@ -89,5 +105,14 @@ onMounted(() => {
 <style scoped>
 .link {
     text-decoration: none
+}
+
+#search {
+    display: flex;
+    justify-content: space-between;
+}
+
+#searchString {
+    margin-right: 40px;
 }
 </style>
