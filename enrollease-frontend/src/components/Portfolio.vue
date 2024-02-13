@@ -14,12 +14,10 @@
                 <col style="width: 26%;">
             </colgroup>
             <thead>
-                <tr>
-                    <th v-for="column in listColumns" :key="column">{{ column }}</th>
-                </tr>
+                <th v-for="column in listColumns" :key="column">{{ column }}</th>
             </thead>
             <tbody>
-                <tr v-for="applicant in filteredData" :key="applicant.data['№']">
+                <tr v-for="applicant in filteredData" :key="applicant.data['№']" @click="openLink(applicant.data.Ссылка)">
                     <td v-for="col in listColumns" :key="col">
                         <div>{{ editData(applicant.data, col) }}</div>
                     </td>
@@ -49,6 +47,10 @@ const filteredData = computed(() => {
         return resultList.value
     }
 })
+const openLink = (link) => {
+    window.open(link, '_blank');
+};
+
 function editData(data, col) {
     if (col === "Дата создания" || col === "Последнее изменение") {
         return data[col].split(' ')[0]
@@ -58,6 +60,7 @@ function editData(data, col) {
         return data[col]
     }
 }
+
 
 const portfolioData = ref([
     {
@@ -70,7 +73,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "Отклонено",
             "Ранг": "5",
-            "Комментарии": "Lorem"
+            "Комментарии": "Lorem",
+            "Ссылка": ""
         },
     },
     {
@@ -83,7 +87,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "Нужна консультация",
             "Ранг": "7",
-            "Комментарии": "Непонятно"
+            "Комментарии": "Непонятно",
+            "Ссылка": ""
         },
     },
     {
@@ -96,7 +101,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "Финалист",
             "Ранг": "9",
-            "Комментарии": "норм"
+            "Комментарии": "норм",
+            "Ссылка": ""
         },
     },
     {
@@ -109,7 +115,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "Кандидат в победители",
             "Ранг": "10",
-            "Комментарии": "Топ"
+            "Комментарии": "Топ",
+            "Ссылка": ""
         },
     },
     {
@@ -122,7 +129,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "Победитель",
             "Ранг": "11",
-            "Комментарии": "Вах"
+            "Комментарии": "Вах",
+            "Ссылка": ""
         },
     },
     {
@@ -135,7 +143,8 @@ const portfolioData = ref([
             "Телефон": "1-111-111-11-12",
             "Статус": "-",
             "Ранг": "-",
-            "Комментарии": "-"
+            "Комментарии": "-",
+            "Ссылка": ""
         },
     },
 ])
