@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainPage from './components/MainPage.vue'
 import Applicants from './components/Applicants.vue'
+import Portfolio from './components/Portfolio.vue'
 import ApplicantDetails from './components/ApplicantDetails.vue'
 import Settings from './components/Settings.vue'
 
@@ -10,6 +11,10 @@ const router = createRouter({
         name: 'MainPage',
         path: '/',
         component: MainPage
+    }, {
+        name: 'Portfolio',
+        path: '/portfolio',
+        component: Portfolio
     }, {
         name: 'Applicants',
         path: '/applicants',

@@ -4,6 +4,7 @@
       <nav id="navigation" class="some">
         <router-link to="/" :class="['navLink', 'logoText']" class="enrollEaseLink">EnrollEase</router-link>
         <div class="navList">
+          <router-link to="/portfolio" class="navLink">Портфолио</router-link>
           <router-link to="/applicants" class="navLink">Абитуриенты</router-link>
           <router-link to="/settings" class="navLink">Настройки</router-link>
           <span class="navLink" @click="logout">Выйти</span>

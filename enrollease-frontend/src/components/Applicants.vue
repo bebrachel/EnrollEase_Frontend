@@ -17,7 +17,7 @@
             <tbody>
                 <tr v-for="applicant in filteredData" key="№" @click="goToTheApplicant(applicant.data['№'])">
                     <td>
-                            {{ applicant.data.ФИО }}
+                        {{ applicant.data.ФИО }}
                     </td>
                     <td v-for="col in listColumns.slice(1)" :key="col">
                         <div v-if="col != 'ФИО'">
@@ -59,7 +59,7 @@ const filteredData = computed(() => {
             const lowerFIO = applicant.data.ФИО.toLowerCase()
             const fio = lowerFIO.split(' ');
             return fio.some(substring => substring.startsWith(search)) ||
-                   lowerFIO.startsWith(search);
+                lowerFIO.startsWith(search);
         });
     } else {
         return resultList.value
