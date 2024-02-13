@@ -4,9 +4,9 @@
       <nav id="navigation" class="some">
         <router-link to="/" :class="['navLink', 'logoText']" class="enrollEaseLink">EnrollEase</router-link>
         <div class="navList">
-          <router-link to="/portfolio" class="navLink">Портфолио</router-link>
-          <router-link to="/applicants" class="navLink">Абитуриенты</router-link>
-          <router-link to="/settings" class="navLink">Настройки</router-link>
+          <router-link to="/portfolio" :class="{ 'active': $route.path === '/portfolio' }" class="navLink">Портфолио</router-link>
+          <router-link to="/applicants" :class="{ 'active': $route.path === '/applicants' }" class="navLink">Абитуриенты</router-link>
+          <router-link to="/settings" :class="{ 'active': $route.path === '/settings' }" class="navLink">Настройки</router-link>
           <span class="navLink" @click="logout">Выйти</span>
         </div>
       </nav>
@@ -89,5 +89,10 @@ header {
   justify-content: center;
   height: 100vh;
   /* Высота 100% видимой области страницы */
+}
+
+.active {
+  color: black;
+  text-decoration: underline;
 }
 </style>
