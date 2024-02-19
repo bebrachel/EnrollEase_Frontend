@@ -3,6 +3,14 @@
         <div id="search">
             <input type="text" v-model="searchString" placeholder="Поиск по ФИО">
         </div>
+        <br>
+        <div class="checkbox-group">
+            <div>Статусы:</div>
+            <label v-for="(item, index) in filterOptions" :key="index" class="checkbox-item">
+                {{ item.label }}
+                <input type="checkbox" v-model="selectedFilters" :value="item.value">
+            </label>
+        </div>
         <table class="custom-table">
             <colgroup>
                 <col style="width: 24%;">
@@ -33,6 +41,15 @@ import { ref, computed } from 'vue'
 
 const searchString = ref('')
 const listColumns = ref(["ФИО", "Дата создания", "Последнее изменение", "Контактные данные", "Статус", "Ранг", "Комментарии"])
+const filterOptions = ref([
+    { label: 'Отклонено', value: 'Отклонено' },
+    { label: 'Нужна консультация', value: 'Нужна консультация' },
+    { label: 'Финалист', value: 'Финалист' },
+    { label: 'Кандидат', value: 'Кандидат в победители' },
+    { label: 'Победитель', value: 'Победитель' },
+    { label: 'Нет', value: '-' },
+])
+const selectedFilters = ref([])
 const filteredData = computed(() => {
     const resultList = ref(portfolioData.value)
     if (searchString.value !== "") {
@@ -40,16 +57,22 @@ const filteredData = computed(() => {
             const search = searchString.value.toLowerCase()
             const lowerFIO = applicant.data.ФИО.toLowerCase()
             const fio = lowerFIO.split(' ');
-            return fio.some(substring => substring.startsWith(search)) ||
+            resultList.value = fio.some(substring => substring.startsWith(search)) ||
                 lowerFIO.startsWith(search);
-        });
-    } else {
-        return resultList.value
+        })
     }
+    if (selectedFilters.value.length !== 0) {
+        return resultList.value.filter(row => {
+            return selectedFilters.value.some(filter => row.data.Статус.includes(filter))
+        })
+    }
+    return resultList.value
+
 })
 const openLink = (link) => {
-    window.open(link, '_blank');
-};
+    window.open(link, '_blank')
+}
+
 
 function editData(data, col) {
     if (col === "Дата создания" || col === "Последнее изменение") {
@@ -150,3 +173,25 @@ const portfolioData = ref([
 ])
 
 </script>
+
+<style scoped>
+.checkbox-group {
+    display: flex;
+    gap: 25px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"]:hover {
+    cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+    transform: scale(1.2);
+    margin-left: 8px;
+}
+</style>
