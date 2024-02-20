@@ -1,17 +1,29 @@
 <template>
-    <div v-if="portfolioData">
-        <div id="search">
-            <input type="text" v-model="searchString" placeholder="Поиск по ФИО">
+    <div>
+        <div class="group">
+            <div id="search">
+                <input type="text" v-model="searchString" placeholder="Поиск по ФИО">
+                <span class="clear-icon" @click="clearInput">✕</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" v-model="switchChecked" @change="handleSwitchChange">
+                <span class="slider round"></span>
+            </label>
+            <span style="margin-left: -20px;">Открыть на запись</span>
+            <button style="margin-left: 20px;">Сгенерировать сертификаты</button>
+            <button style="margin-left: 20px;">Перенести данные в “Абитуриенты”</button>
+            <button style="margin-left: auto; margin-right: 50px;">Сохранить</button>
         </div>
         <br>
-        <div class="checkbox-group">
+        <div class="group">
             <div>Статусы:</div>
             <label v-for="(item, index) in filterOptions" :key="index" class="checkbox-item">
                 {{ item.label }}
                 <input type="checkbox" v-model="selectedFilters" :value="item.value">
             </label>
+            <button v-if="selectedFilters.length && selectedFilters.length !== 0" id="buttonClear" @click="clearCheckboxes">Очистить</button>
         </div>
-        <table class="custom-table">
+        <table class="custom-table" v-if="portfolioData">
             <colgroup>
                 <col style="width: 24%;">
                 <col style="width: 10%;">
@@ -40,6 +52,7 @@
 import { ref, computed } from 'vue'
 
 const searchString = ref('')
+const switchChecked = ref(false)
 const listColumns = ref(["ФИО", "Дата создания", "Последнее изменение", "Контактные данные", "Статус", "Ранг", "Комментарии"])
 const filterOptions = ref([
     { label: 'Отклонено', value: 'Отклонено' },
@@ -52,18 +65,19 @@ const filterOptions = ref([
 const selectedFilters = ref([])
 const filteredData = computed(() => {
     const resultList = ref(portfolioData.value)
+    console.log(searchString.value)
     if (searchString.value !== "") {
-        return resultList.value.filter(applicant => {
+        resultList.value = resultList.value.filter(applicant => {
             const search = searchString.value.toLowerCase()
             const lowerFIO = applicant.data.ФИО.toLowerCase()
             const fio = lowerFIO.split(' ');
-            resultList.value = fio.some(substring => substring.startsWith(search)) ||
+            return fio.some(substring => substring.startsWith(search)) ||
                 lowerFIO.startsWith(search);
         })
     }
     if (selectedFilters.value.length !== 0) {
-        return resultList.value.filter(row => {
-            return selectedFilters.value.some(filter => row.data.Статус.includes(filter))
+        return resultList.value.filter(applicant => {
+            return selectedFilters.value.some(filter => applicant.data.Статус.includes(filter))
         })
     }
     return resultList.value
@@ -73,6 +87,10 @@ const openLink = (link) => {
     window.open(link, '_blank')
 }
 
+function handleSwitchChange() {
+    console.log(switchChecked.value)
+    // сюда потом добавить отправку на сервер изменений
+}
 
 function editData(data, col) {
     if (col === "Дата создания" || col === "Последнее изменение") {
@@ -82,6 +100,14 @@ function editData(data, col) {
     } else {
         return data[col]
     }
+}
+
+function clearInput() {
+    searchString.value = ''
+}
+
+function clearCheckboxes() {
+    selectedFilters.value = []
 }
 
 
@@ -175,14 +201,17 @@ const portfolioData = ref([
 </script>
 
 <style scoped>
-.checkbox-group {
+.group {
+    position: relative;
     display: flex;
+    align-items: center;
     gap: 25px;
+    margin-bottom: 15px;
 }
 
 .checkbox-item {
     display: flex;
-    align-items: center;
+    align-items: end;
     cursor: pointer;
 }
 
@@ -193,5 +222,90 @@ const portfolioData = ref([
 .checkbox-item input[type="checkbox"] {
     transform: scale(1.2);
     margin-left: 8px;
+}
+
+#search {
+    position: relative;
+}
+
+.clear-icon {
+    position: absolute;
+    top: 50%;
+    margin-left: 5px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+  margin-left: 50px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 8.5px;
+  overflow: hidden;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 13px;
+  width: 13px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(13px);
+  -ms-transform: translateX(13px);
+  transform: translateX(13px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#buttonClear {
+    background-color: rgb(255, 179, 179);
+    border: none;
+    border-radius: 5px;
+}
+
+#buttonClear:active {
+    background-color: rgb(255, 110, 110);
 }
 </style>

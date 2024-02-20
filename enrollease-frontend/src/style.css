@@ -9,6 +9,20 @@ label {
   margin-right: 10px;
 }
 
+button {
+  border-color: rgb(123, 125, 255);
+  border-style: double;
+  background-color: rgb(176, 181, 255);
+  border-radius: 15px;
+  padding: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:active {
+  background-color: rgb(108, 118, 255);
+}
+
 .element {
   margin: 20px;
 }
