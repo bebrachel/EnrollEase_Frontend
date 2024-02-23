@@ -47,23 +47,23 @@ const searchString = ref('')
 const listColumns = ref(["ФИО", "Оригинал", "Пол", "Состояние", "Возраст", "Житель города", "Направление\\специальность", "Сумма баллов по ИД", "Сумма баллов"])
 
 const filteredData = computed(() => {
-    const resultList = ref()
-    if (applicantList && selectedFilter.value === 'descending') {
-        resultList.value = applicantList.value.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов'])
-    } else {
-        resultList.value = applicantList.value
+    if (!applicantList || !applicantList.value) {
+        return [];
+    }
+    let data = applicantList.value;
+    if (selectedFilter.value === 'descending') {
+        data = data.slice().sort((a, b) => b.data['Сумма баллов'] - a.data['Сумма баллов']);
     }
     if (searchString.value !== "") {
-        return resultList.value.filter(applicant => {
-            const search = searchString.value.toLowerCase()
-            const lowerFIO = applicant.data.ФИО.toLowerCase()
+        const search = searchString.value.toLowerCase();
+        data = data.filter(applicant => {
+            const lowerFIO = applicant.data.ФИО.toLowerCase();
             const fio = lowerFIO.split(' ');
             return fio.some(substring => substring.startsWith(search)) ||
                 lowerFIO.startsWith(search);
-        });
-    } else {
-        return resultList.value
+        })
     }
+    return data;
 })
 
 function parseDateString(dateString) {
