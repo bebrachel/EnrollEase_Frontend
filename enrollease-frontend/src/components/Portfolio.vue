@@ -10,8 +10,8 @@
                 <span class="slider round"></span>
             </label>
             <span style="margin-left: -20px;">Открыть на запись</span>
-            <button style="margin-left: 20px;">Сгенерировать сертификаты</button>
-            <button style="margin-left: 20px;">Перенести данные в “Абитуриенты”</button>
+            <button style="margin-left: 20px;" @click="generateSertificates">Сгенерировать сертификаты</button>
+            <button style="margin-left: 20px;" @click="importApplicants">Перенести данные в “Абитуриенты”</button>
             <button id="saveButton" style="margin-left: auto; margin-right: 50px;">Сохранить</button>
         </div>
         <br>
@@ -37,14 +37,15 @@
             <thead>
                 <th v-for="column in listColumns" :key="column">
                     <span v-if="isContactStatusComm(column)" @click="sortColumn(column)" class="pointerCursor">{{ column
-                    }}<sub style="color: gray;">v</sub></span>
+                        }}<sub style="color: gray;">v</sub></span>
                     <span v-else>{{ column }}</span>
                 </th>
             </thead>
             <tbody>
-                <tr v-for="applicant in filteredData" :key="applicant.data['№']" @click="openLink(applicant.data.Ссылка)">
+                <tr v-for="applicant in filteredData"
+                    @click="openLink('https://drive.google.com/drive/folders/' + applicant.folderId)">
                     <td v-for="col in listColumns" :key="col">
-                        <div>{{ editData(applicant.data, col) }}</div>
+                        <div>{{ editData(applicant, col) }}</div>
                     </td>
                 </tr>
             </tbody>
@@ -54,20 +55,30 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
+import axios from 'axios'
+import { useNotification } from '@kyvg/vue3-notification';
+import Swal from 'sweetalert2';
+
+const serverUrl = inject("serverUrl")
+const token = inject("token")
+
+const { notify } = useNotification()
 
 const searchString = ref('')
 const switchChecked = ref(false)
 const sortOrder = ref(1)
 const sortBy = ref('')
-const listColumns = ref(["ФИО", "Дата создания", "Последнее изменение", "Контактные данные", "Статус", "Ранг", "Комментарии"])
+const portfolioData = ref()
+// при изменении названий нужно сохранять смысловой порядок колонок в списке
+const listColumns = ref(["name", "folderCreationDate", "folderUpdatedAt", "email", "status", "rank", "commentaries"])
 const filterOptions = ref([
     { label: 'Отклонено', value: 'Отклонено' },
     { label: 'Нужна консультация', value: 'Нужна консультация' },
     { label: 'Финалист', value: 'Финалист' },
     { label: 'Кандидат', value: 'Кандидат в победители' },
     { label: 'Победитель', value: 'Победитель' },
-    { label: 'Нет', value: '-' },
+    { label: 'Нет', value: 'PARTICIPANT' },
 ])
 const selectedFilters = ref([])
 const filteredData = computed(() => {
@@ -75,7 +86,7 @@ const filteredData = computed(() => {
     if (searchString.value !== "") {
         const search = searchString.value.toLowerCase();
         data = data.filter(applicant => {
-            const lowerFIO = applicant.data.ФИО.toLowerCase();
+            const lowerFIO = applicant[listColumns.value[0]].toLowerCase();
             const fio = lowerFIO.split(' ');
             return fio.some(substring => substring.startsWith(search)) ||
                 lowerFIO.startsWith(search);
@@ -83,30 +94,30 @@ const filteredData = computed(() => {
     }
     if (selectedFilters.value.length !== 0) {
         data = data.filter(applicant => {
-            return selectedFilters.value.some(filter => applicant.data.Статус.includes(filter));
+            return selectedFilters.value.some(filter => applicant[listColumns.value[4]].includes(filter));
         });
     }
     if (sortBy.value === '') {
         return data;
     } else {
         return data.slice().sort((a, b) => {
-            let columnA = a.data[sortBy.value];
-            let columnB = b.data[sortBy.value];
+            let columnA = a[sortBy.value];
+            let columnB = b[sortBy.value];
 
-            if (sortBy.value === "Дата создания" || sortBy.value === "Последнее изменение") {
+            if (sortBy.value === listColumns.value[1] || sortBy.value === listColumns.value[2]) {
                 columnA = new Date(columnA.replace(/(\d{2}).(\d{2}).(\d{4})/, '$3-$2-$1'));
                 columnB = new Date(columnB.replace(/(\d{2}).(\d{2}).(\d{4})/, '$3-$2-$1'));
             }
 
-            if (sortBy.value === "Ранг") {
+            if (sortBy.value === listColumns.value[5]) {
                 if (columnA === '-' || isNaN(Number(columnA))) {
-                    columnA = Infinity;
+                    columnA = -Infinity;
                 } else {
                     columnA = Number(columnA);
                 }
 
                 if (columnB === '-' || isNaN(Number(columnB))) {
-                    columnB = Infinity;
+                    columnB = -Infinity;
                 } else {
                     columnB = Number(columnB);
                 }
@@ -119,12 +130,8 @@ const filteredData = computed(() => {
     }
 })
 
-function sortData() {
-    
-}
-
 function isContactStatusComm(column) {
-    return column !== "Контактные данные" && column !== "Статус" && column !== "Комментарии";
+    return column !== listColumns.value[3] && column !== listColumns.value[4] && column !== listColumns.value[6];
 }
 
 function sortColumn(column) {
@@ -137,10 +144,11 @@ function sortColumn(column) {
 }
 
 function editData(data, col) {
-    if (col === "Дата создания" || col === "Последнее изменение") {
+    if (col === listColumns.value[1] || col === listColumns.value[2]) {
         return data[col].split(' ')[0]
-    } else if (col === "Контактные данные") {
-        return data["Телефон"] + ', ' + data["Email"];
+    } else if (col === listColumns.value[3]) {
+        //return data["Телефон"] + ', ' + data[listColumns.value[3]]
+        return data[listColumns.value[3]]
     } else {
         return data[col]
     }
@@ -151,8 +159,26 @@ const openLink = (link) => {
 }
 
 function handleSwitchChange() {
-    console.log(switchChecked.value)
-    // сюда потом добавить отправку на сервер изменений
+    Swal.fire({
+            title: 'Подтвердите действие',
+            text: 'Вы уверены, что хотите продолжить?',
+            icon: 'question',
+            showDenyButton: "true"
+        }).then((result) => {
+            if (result.isConfirmed && (switchChecked.value === true)) {
+                console.log("fst")
+                // отправить на сервер просьбу открыть доступ на редактирование папок
+            } else if (result.isConfirmed && (switchChecked.value === false)) {
+                console.log("snd")
+                // отправить серверу просьбу закрыть доступ к папкам на редактирование
+            } else {
+                switchChecked.value = !switchChecked.value
+            }
+        })
+    if (switchChecked.value) {
+        
+        
+    }
 }
 
 function clearInput() {
@@ -163,94 +189,52 @@ function clearCheckboxes() {
     selectedFilters.value = []
 }
 
+function generateSertificates() {
+    createNotif("warn", "Пожалуйста, подождите...")
+    axios.get(serverUrl + 'applicants-portfolio/generate-sertificates', {
+        headers: {
+            'Authorization': `Bearer ${token.value}`
+        }
+    }).then(() => {
+        createNotif("success", "Сертификаты сгенерированы!")
+    }).catch(() => {
+        createNotif("error", "Возникла ошибка!")
+    })
+}
 
-const portfolioData = ref([
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Иванов Иван Иванович",
-            "Дата создания": "06.11.1999 0:00:00",
-            "Последнее изменение": "06.11.1999 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "Отклонено",
-            "Ранг": "5",
-            "Комментарии": "Lorem",
-            "Ссылка": ""
-        },
-    },
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Петров Петр Петрович",
-            "Дата создания": "12.11.1999 0:00:00",
-            "Последнее изменение": "12.11.1999 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "Нужна консультация",
-            "Ранг": "7",
-            "Комментарии": "Непонятно",
-            "Ссылка": ""
-        },
-    },
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Яковлева Анастасия Викторовна",
-            "Дата создания": "06.11.2000 0:00:00",
-            "Последнее изменение": "06.11.2000 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "Финалист",
-            "Ранг": "9",
-            "Комментарии": "норм",
-            "Ссылка": ""
-        },
-    },
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Сидоров Сидр Сидорович",
-            "Дата создания": "06.05.1999 0:00:00",
-            "Последнее изменение": "06.05.1999 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "Кандидат в победители",
-            "Ранг": "10",
-            "Комментарии": "Топ",
-            "Ссылка": ""
-        },
-    },
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Ватрушкин Петр Сергеевич",
-            "Дата создания": "06.11.1998 0:00:00",
-            "Последнее изменение": "06.11.1998 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "Победитель",
-            "Ранг": "11",
-            "Комментарии": "Вах",
-            "Ссылка": ""
-        },
-    },
-    {
-        "data": {
-            "№": 1,
-            "ФИО": "Арбузов Николай Иванович",
-            "Дата создания": "31.12.1999 0:00:00",
-            "Последнее изменение": "31.12.1999 0:00:00",
-            "Email": "n.valikov@g.nsu.ru",
-            "Телефон": "1-111-111-11-12",
-            "Статус": "-",
-            "Ранг": "-",
-            "Комментарии": "-",
-            "Ссылка": ""
-        },
-    },
-])
+function importApplicants() {
+    createNotif("warn", "Пожалуйста, подождите...")
+    axios.get(serverUrl + 'applicants-portfolio/import-applicants', {
+        headers: {
+            'Authorization': `Bearer ${token.value}`
+        }
+    }).then(() => {
+        createNotif("success", "Данные успешно перенесены!")
+    }).catch(() => {
+        createNotif("error", "Возникла ошибка!")
+    })
+}
 
+function createNotif(type, text) {
+    notify({
+        group: "app",
+        type: type,
+        text: text,
+    })
+}
+
+
+onMounted(() => {
+    axios.get(serverUrl + 'applicants-portfolio', {
+        headers: {
+            'Authorization': `Bearer ${token.value}`
+        }
+    }).then(response => {
+        portfolioData.value = response.data.applicantList
+    }).catch(error => {
+        console.error(error)
+    })
+})
 </script>
 
 <style scoped>

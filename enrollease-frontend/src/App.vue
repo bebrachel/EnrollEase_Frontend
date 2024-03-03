@@ -27,6 +27,9 @@
     <GoogleSignInButton @success="handleLoginSuccess" @error="handleLoginError"></GoogleSignInButton>
 
   </div>
+
+  <notifications group="auth" position="top" classes="my-notification"/>
+  <notifications group="app" position="bottom right" classes="my-notification"/>
 </template>
 
 
