@@ -4,7 +4,6 @@ import App from './App.vue'
 import router from './router'
 import GoogleSignInPlugin from "vue3-google-signin"
 import Notifications from '@kyvg/vue3-notification'
-import Swal from 'sweetalert2'
 
 const serverUrl = import.meta.env.VITE_API_URL
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID

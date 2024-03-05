@@ -42,10 +42,6 @@ button:active {
   padding: 8px;
 }
 
-.custom-table tr {
-  cursor: pointer;
-}
-
 .custom-table th {
   background-color: #f2f2f2;
 }

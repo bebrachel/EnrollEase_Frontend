@@ -14,7 +14,9 @@
             <button style="margin-left: 20px;" @click="importApplicants">Перенести данные в “Абитуриенты”</button>
             <button id="saveButton" style="margin-left: auto; margin-right: 50px;">Сохранить</button>
         </div>
+
         <br>
+
         <div class="group">
             <div>Статусы:</div>
             <label v-for="(item, index) in filterOptions" :key="index" class="checkbox-item">
@@ -24,6 +26,7 @@
             <button v-if="selectedFilters.length && selectedFilters.length !== 0" id="buttonClear"
                 @click="clearCheckboxes">Очистить</button>
         </div>
+
         <table class="custom-table" v-if="portfolioData">
             <colgroup>
                 <col style="width: 24%;">
@@ -42,15 +45,17 @@
                 </th>
             </thead>
             <tbody>
-                <tr v-for="applicant in filteredData"
-                    @click="openLink('https://drive.google.com/drive/folders/' + applicant.folderId)">
+                <tr v-for="applicant in filteredData">
                     <td v-for="col in listColumns" :key="col">
-                        <div>{{ editData(applicant, col) }}</div>
+                        <div v-if="col === listColumns[0]"
+                            @click="openLink('https://drive.google.com/drive/folders/' + applicant.folderId)"
+                            style="cursor: pointer;">
+                            {{ editData(applicant, col) }}</div>
+                        <div v-else>{{ editData(applicant, col) }}</div>
                     </td>
                 </tr>
             </tbody>
         </table>
-
     </div>
 </template>
 
@@ -158,61 +163,12 @@ const openLink = (link) => {
     window.open(link, '_blank')
 }
 
-function handleSwitchChange() {
-    Swal.fire({
-            title: 'Подтвердите действие',
-            text: 'Вы уверены, что хотите продолжить?',
-            icon: 'question',
-            showDenyButton: "true"
-        }).then((result) => {
-            if (result.isConfirmed && (switchChecked.value === true)) {
-                console.log("fst")
-                // отправить на сервер просьбу открыть доступ на редактирование папок
-            } else if (result.isConfirmed && (switchChecked.value === false)) {
-                console.log("snd")
-                // отправить серверу просьбу закрыть доступ к папкам на редактирование
-            } else {
-                switchChecked.value = !switchChecked.value
-            }
-        })
-    if (switchChecked.value) {
-        
-        
-    }
-}
-
 function clearInput() {
     searchString.value = ''
 }
 
 function clearCheckboxes() {
     selectedFilters.value = []
-}
-
-function generateSertificates() {
-    createNotif("warn", "Пожалуйста, подождите...")
-    axios.get(serverUrl + 'applicants-portfolio/generate-sertificates', {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(() => {
-        createNotif("success", "Сертификаты сгенерированы!")
-    }).catch(() => {
-        createNotif("error", "Возникла ошибка!")
-    })
-}
-
-function importApplicants() {
-    createNotif("warn", "Пожалуйста, подождите...")
-    axios.get(serverUrl + 'applicants-portfolio/import-applicants', {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(() => {
-        createNotif("success", "Данные успешно перенесены!")
-    }).catch(() => {
-        createNotif("error", "Возникла ошибка!")
-    })
 }
 
 function createNotif(type, text) {
@@ -223,6 +179,60 @@ function createNotif(type, text) {
     })
 }
 
+function createSwal() {
+    return Swal.fire({
+        title: 'Подтвердите действие',
+        text: 'Вы уверены, что хотите продолжить?',
+        icon: 'question',
+        showDenyButton: "true"
+    })
+}
+
+function handleSwitchChange() {
+    createSwal().then((result) => {
+        if (result.isConfirmed && (switchChecked.value === true)) {
+            // отправить на сервер просьбу открыть доступ на редактирование папок
+        } else if (result.isConfirmed && (switchChecked.value === false)) {
+            // отправить серверу просьбу закрыть доступ к папкам на редактирование
+        } else {
+            switchChecked.value = !switchChecked.value
+        }
+    })
+}
+
+function generateSertificates() {
+    createSwal().then((result) => {
+        if (result.isConfirmed) {
+            createNotif("warn", "Пожалуйста, подождите...")
+            axios.get(serverUrl + 'applicants-portfolio/generate-sertificates', {
+                headers: {
+                    'Authorization': `Bearer ${token.value}`
+                }
+            }).then(() => {
+                createNotif("success", "Сертификаты сгенерированы!")
+            }).catch(() => {
+                createNotif("error", "Возникла ошибка!")
+            })
+        }
+    })
+}
+
+function importApplicants() {
+    createSwal().then((result) => {
+        if (result.isConfirmed) {
+            createNotif("warn", "Пожалуйста, подождите...")
+            axios.get(serverUrl + 'applicants-portfolio/import-applicants', {
+                headers: {
+                    'Authorization': `Bearer ${token.value}`
+                }
+            }).then(() => {
+                createNotif("success", "Данные успешно перенесены!")
+            }).catch(() => {
+                createNotif("error", "Возникла ошибка!")
+            })
+        }
+    })
+}
 
 onMounted(() => {
     axios.get(serverUrl + 'applicants-portfolio', {
@@ -231,8 +241,8 @@ onMounted(() => {
         }
     }).then(response => {
         portfolioData.value = response.data.applicantList
-    }).catch(error => {
-        console.error(error)
+    }).catch(() => {
+        createNotif("error", "Ошибка загрузки портфолио")
     })
 })
 </script>

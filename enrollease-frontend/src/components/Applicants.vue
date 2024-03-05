@@ -16,7 +16,7 @@
             </thead>
             <tbody>
                 <tr v-for="applicant in filteredData" key="№" @click="goToTheApplicant(applicant.data['№'])">
-                    <td>
+                    <td style="cursor: pointer;">
                         {{ applicant.data.ФИО }}
                     </td>
                     <td v-for="col in listColumns.slice(1)" :key="col">
@@ -36,8 +36,10 @@
 import { inject, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useNotification } from '@kyvg/vue3-notification';
 
 const router = useRouter()
+const { notify } = useNotification()
 
 const serverUrl = inject("serverUrl")
 const token = inject("token")
@@ -91,6 +93,14 @@ function goToTheApplicant(n) {
     router.push({ name: 'ApplicantDetails', params: { number: `${n - 1}` } })
 }
 
+function createNotif(type, text) {
+    notify({
+        group: "app",
+        type: type,
+        text: text,
+    })
+}
+
 onMounted(() => {
     axios.get(serverUrl + 'applicants', {
         headers: {
@@ -98,8 +108,8 @@ onMounted(() => {
         }
     }).then(response => {
         applicantList.value = response.data.applicantList
-    }).catch(error => {
-        console.error(error)
+    }).catch(() => {
+        createNotif("error", "Ошибка загрузки абитуриентов")
     })
 })
 </script>
