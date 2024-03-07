@@ -60,13 +60,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, inject } from 'vue'
-import axios from 'axios'
+import { ref, computed, onMounted } from 'vue'
 import { useNotification } from '@kyvg/vue3-notification';
 import Swal from 'sweetalert2';
+import { fetchWrapper } from '@/helpers/fetch-wrapper.js'
+import { useAuthStore } from '@/stores/authStore'
+import { storeToRefs } from 'pinia';
 
-const serverUrl = inject("serverUrl")
-const token = inject("token")
+const authStore = useAuthStore()
+const { api_uri } = storeToRefs(authStore)
 
 const { notify } = useNotification()
 
@@ -201,46 +203,36 @@ function handleSwitchChange() {
 }
 
 function generateSertificates() {
-    createSwal().then((result) => {
+    createSwal().then(async (result) => {
         if (result.isConfirmed) {
             createNotif("warn", "Пожалуйста, подождите...")
-            axios.get(serverUrl + 'applicants-portfolio/generate-sertificates', {
-                headers: {
-                    'Authorization': `Bearer ${token.value}`
-                }
-            }).then(() => {
-                createNotif("success", "Сертификаты сгенерированы!")
-            }).catch(() => {
-                createNotif("error", "Возникла ошибка!")
-            })
+            await fetchWrapper.get(api_uri.value + 'applicants-portfolio/generate-sertificates')
+                .then(() => {
+                    createNotif("success", "Сертификаты сгенерированы!")
+                }).catch(() => {
+                    createNotif("error", "Возникла ошибка!")
+                })
         }
     })
 }
 
 function importApplicants() {
-    createSwal().then((result) => {
+    createSwal().then(async (result) => {
         if (result.isConfirmed) {
             createNotif("warn", "Пожалуйста, подождите...")
-            axios.get(serverUrl + 'applicants-portfolio/import-applicants', {
-                headers: {
-                    'Authorization': `Bearer ${token.value}`
-                }
-            }).then(() => {
-                createNotif("success", "Данные успешно перенесены!")
-            }).catch(() => {
-                createNotif("error", "Возникла ошибка!")
-            })
+            await fetchWrapper.get(api_uri.value + 'applicants-portfolio/import-applicants')
+                .then(() => {
+                    createNotif("success", "Данные успешно перенесены!")
+                }).catch(() => {
+                    createNotif("error", "Возникла ошибка!")
+                })
         }
     })
 }
 
-onMounted(() => {
-    axios.get(serverUrl + 'applicants-portfolio', {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(response => {
-        portfolioData.value = response.data.applicantList
+onMounted(async () => {
+    await fetchWrapper.get(api_uri.value + 'applicants-portfolio').then((response) => {
+        portfolioData.value = response.applicantList
     }).catch(() => {
         createNotif("error", "Ошибка загрузки портфолио")
     })

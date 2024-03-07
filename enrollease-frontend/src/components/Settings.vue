@@ -32,12 +32,15 @@
 
 
 <script setup>
-import { ref, inject, onMounted } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { fetchWrapper } from '@/helpers/fetch-wrapper'
+import { useAuthStore } from '@/stores/authStore'
+import { storeToRefs } from 'pinia';
+
+const authStore = useAuthStore()
+const { api_uri } = storeToRefs(authStore)
 
 const add = ref(false)
-const serverUrl = inject("serverUrl")
-const token = inject("token")
 const responseData = ref(null)
 const newColleagueData = ref({
     email: '',
@@ -49,33 +52,23 @@ const roleNames = ref({
     'DEFAULT_COLLEAGUE': 'Член комиссии'
 })
 
-function addNewColleague() {
-    axios.put(serverUrl + 'admin/colleagues', newColleagueData.value, {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(() => {
-        newColleagueData.value.email = ''
-        newColleagueData.value.roles[0] = 'DEFAULT_COLLEAGUE'
-        getData()
-    }).catch(error => {
-        console.error(error);
-    })
+async function addNewColleague() {
+    await fetchWrapper.put(api_uri.value + 'admin/colleagues', newColleagueData.value)
+        .then(() => {
+            newColleagueData.value.email = ''
+            newColleagueData.value.roles[0] = 'DEFAULT_COLLEAGUE'
+            getData()
+        }).catch(error => {
+            console.error(error);
+        })
 }
 
-onMounted(() => {
-    getData()
+onMounted(async () => {
+    await fetchWrapper.get(api_uri.value + 'colleagues')
+        .then(response => {
+            responseData.value = response.colleagueList;
+        }).catch(error => {
+            console.error(error);
+        })
 })
-
-function getData() {
-    axios.get(serverUrl + 'colleagues', {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(response => {
-        responseData.value = response.data.colleagueList;
-    }).catch(error => {
-        console.error(error);
-    })
-}
 </script>

@@ -35,14 +35,16 @@
 <script setup>
 import { inject, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import { useNotification } from '@kyvg/vue3-notification';
+import { fetchWrapper } from '@/helpers/fetch-wrapper'
+import { useAuthStore } from '@/stores/authStore'
+import { storeToRefs } from 'pinia';
 
+const authStore = useAuthStore()
+const { api_uri } = storeToRefs(authStore)
 const router = useRouter()
 const { notify } = useNotification()
 
-const serverUrl = inject("serverUrl")
-const token = inject("token")
 const applicantList = inject("applicantList")
 const selectedFilter = ref('')
 const searchString = ref('')
@@ -101,16 +103,13 @@ function createNotif(type, text) {
     })
 }
 
-onMounted(() => {
-    axios.get(serverUrl + 'applicants', {
-        headers: {
-            'Authorization': `Bearer ${token.value}`
-        }
-    }).then(response => {
-        applicantList.value = response.data.applicantList
-    }).catch(() => {
-        createNotif("error", "Ошибка загрузки абитуриентов")
-    })
+onMounted(async () => {
+    await fetchWrapper.get(api_uri.value + 'applicants')
+        .then(response => {
+            applicantList.value = response.data.applicantList
+        }).catch(() => {
+            createNotif("error", "Ошибка загрузки абитуриентов")
+        })
 })
 </script>
 
