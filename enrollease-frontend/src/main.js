@@ -1,20 +1,17 @@
 import './style.css'
 import { createApp, ref } from 'vue'
 import App from './App.vue'
-import vue3GoogleLogin from 'vue3-google-login'
-import router from './router'
+import { router } from './helpers/router'
 
-const CLIENT_ID = ""
-const serverUrl = "http://89.104.67.184:8080/"
-const token = ref(null)
+import Notifications from '@kyvg/vue3-notification'
+import { createPinia } from 'pinia'
+
+
 const applicantList = ref(null)
 
 createApp(App)
-    .use(router)
-    .use(vue3GoogleLogin, {
-        clientId: CLIENT_ID,
-    })
-    .provide("serverUrl", serverUrl)
-    .provide("token", token)
-    .provide("applicantList", applicantList)
-    .mount('#app')
+  .use(router)
+  .use(Notifications)
+  .use(createPinia())
+  .provide("applicantList", applicantList)
+  .mount('#app')
