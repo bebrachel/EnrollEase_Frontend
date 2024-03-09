@@ -1,4 +1,4 @@
-# Указываем базовый образ для сборки приложения
+# Сначала устанавливаем зависимости и собираем статические файлы приложения
 FROM node:latest as build-stage
 
 # Устанавливаем рабочую директорию
@@ -16,8 +16,17 @@ COPY . .
 # Собираем статические файлы
 RUN npm run build
 
-# Указываем базовый образ, который содержит Nginx
-FROM nginx:latest
+# Затем настраиваем Nginx для обслуживания собранных статических файлов
+FROM nginx:alpine
 
 # Копируем скомпилированные статические файлы из предыдущего этапа сборки
-COPY --from=build-stage /app/dist/ /usr/share/nginx/html
+COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+# Копируем конфигурационный файл nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Указываем порт, на котором будет работать Nginx
+EXPOSE 80
+
+# Запускаем Nginx в фоновом режиме при запуске контейнера
+CMD ["nginx", "-g", "daemon off;"]

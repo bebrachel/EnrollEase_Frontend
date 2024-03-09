@@ -63,12 +63,20 @@ async function addNewColleague() {
         })
 }
 
+function createNotif(type, text) {
+    notify({
+        group: "app",
+        type: type,
+        text: text,
+    })
+}
+
 onMounted(async () => {
     await fetchWrapper.get(api_uri.value + 'colleagues')
         .then(response => {
             responseData.value = response.colleagueList;
         }).catch(error => {
-            console.error(error);
+            createNotif("error", "Ошибка загрузки настроек!")
         })
 })
 </script>

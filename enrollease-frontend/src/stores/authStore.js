@@ -45,10 +45,21 @@ export const useAuthStore = defineStore({
                     )
 
                     if (userObj && userObj.data) {
+                        const is_allowed = await axios.get(
+                            import.meta.env.VITE_API_URL + 'admin/colleagues/is_allowed?email=' + userObj.data.email,
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${data.id_token}`,
+                                },
+                            },
+                        )
+                        if (!is_allowed) {
+                            logout();
+                        }
                         // save copy in storage
                         this.$patch({ user: userObj.data, token: data.id_token });
                         localStorage.setItem('user', JSON.stringify(userObj.data))
-                        localStorage.setItem('token', this.token)
+                        localStorage.setItem('token', JSON.stringify(this.token))
                         router.push(this.returnUrl || '/');
                     }
                     else {
